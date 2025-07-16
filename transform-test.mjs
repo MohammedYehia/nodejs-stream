@@ -18,7 +18,7 @@ const charCodeTransform = new Transform({
 				data += ch.charCodeAt() + "|";
 			}
 
-			chunksCount++;
+			console.log(`Chunk #${++chunksCount} Size: ${chunk.length / 1024} KB`);
 			this.push(data);
 			cb();
 		} catch (error) {
