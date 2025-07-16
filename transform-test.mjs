@@ -1,11 +1,12 @@
 import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { createReadStream, createWriteStream } from "node:fs";
+import { createReadStream, createWriteStream, statSync } from "node:fs";
 // this remembers partial multibyte sequences between chunks for big files in case of multibyte characters 2-4 bytes
 import { StringDecoder } from "string_decoder";
 
 const decoder = new StringDecoder("utf8");
-
+const fileSize = statSync("input.txt").size;
+let progress = 0;
 let chunksCount = 0;
 const charCodeTransform = new Transform({
 	// max chunk size is based on highWaterMark which default to 64 KB
@@ -18,7 +19,12 @@ const charCodeTransform = new Transform({
 				data += ch.charCodeAt() + "|";
 			}
 
-			console.log(`Chunk #${++chunksCount} Size: ${chunk.length / 1024} KB`);
+			progress += chunk.length / fileSize;
+			console.log(
+				`Chunk #${++chunksCount} Size: ${
+					chunk.length / 1024
+				} KB, Progress is ${(progress * 100).toFixed(2)}%`
+			);
 			this.push(data);
 			cb();
 		} catch (error) {
